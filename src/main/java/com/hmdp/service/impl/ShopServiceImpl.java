@@ -9,6 +9,7 @@ import com.hmdp.dto.Result;
 import com.hmdp.entity.Shop;
 import com.hmdp.mapper.ShopMapper;
 import com.hmdp.service.IShopService;
+import com.hmdp.utils.CacheClient;
 import com.hmdp.utils.RedisData;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -35,16 +36,19 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-
+    @Resource
+    private CacheClient cacheClient;
 
     @Override
     public Result queryById(Long id) {
         //缓存穿透
 //        Shop shop = queryWritePassThrough(id);
+//        Shop shop = cacheClient.queryWithPassThrough(CACHE_SHOP_KEY, id, Shop.class, this::getById, CACHE_SHOP_TTL, TimeUnit.MINUTES);
         //互斥锁
 //        Shop shop = queryWritePassThrough(id);
         //逻辑过期
-        Shop shop = queryWitheLogicalExpire(id);
+//        Shop shop = queryWitheLogicalExpire(id);
+        Shop shop = cacheClient.queryWithLogicalExpire(CACHE_SHOP_KEY, id, Shop.class, this::getById, CACHE_SHOP_TTL, TimeUnit.SECONDS);
         if (shop == null) {
             return Result.fail("shop不存在");
         }
@@ -53,8 +57,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10);
     public Shop queryWitheLogicalExpire(Long id) {
         String key = CACHE_SHOP_KEY + id;
-        long ttl = CACHE_SHOP_TTL + (int)System.currentTimeMillis()%10;
-
+        long ttl = CACHE_SHOP_TTL + System.currentTimeMillis()%10;
         String shopJson = stringRedisTemplate.opsForValue().get(key);
 //        log.debug("==> Redis get: " + shopJson);
         //判断不存在直接返回
@@ -134,8 +137,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         String shopJson = stringRedisTemplate.opsForValue().get(key);
         log.debug("==> Redis get: " + shopJson);
         if (StrUtil.isNotBlank(shopJson)) {
-            Shop shop = JSONUtil.toBean(shopJson, Shop.class);
-            return shop;
+            return JSONUtil.toBean(shopJson, Shop.class);
         }
         if (shopJson != null) {
             return null;

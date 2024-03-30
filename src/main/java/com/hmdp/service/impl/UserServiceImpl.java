@@ -41,7 +41,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    private long ttl = LOGIN_CODE_TTL + (int)System.currentTimeMillis()%10;
     @Override
     public Result sendCode(String phone, HttpSession session) {
         //1. 校验手机号
@@ -54,7 +53,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String code = RandomUtil.randomNumbers(6);
         //4. 保存验证码到session
 //        session.setAttribute("code",code);
-        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code, ttl, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code, LOGIN_CODE_TTL, TimeUnit.MINUTES);
         //5. 发送验证码
         log.debug("发送短信验证码成功，验证码:{}",code);
         //返回ok
@@ -88,17 +87,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             //6. 不存在，创建新用户
             user = createUserWithPhone(phone);
         }
-
         //7.保存用户信息到session
         session.setAttribute("user", BeanUtil.copyProperties(user,UserDTO.class));
         String token = UUID.randomUUID().toString(true);
         UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
         Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(),
                 CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, filedValue) -> filedValue.toString()));
-        String tokenkey = LOGIN_USER_KEY + token;
-        stringRedisTemplate.opsForHash().putAll(tokenkey,map);
-        stringRedisTemplate.expire(tokenkey, ttl, TimeUnit.MINUTES);
-        log.debug("<== Redis put: "+ tokenkey);
+        String tokenKey = LOGIN_USER_KEY + token;
+        stringRedisTemplate.opsForHash().putAll(tokenKey,map);
+        stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        log.debug("<== Redis put: "+ tokenKey);
         return Result.ok(token);
     }
 
