@@ -65,6 +65,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         String queueName = "stream.order";
         @Override
         public void run() {
+            //noinspection InfiniteLoopStatement
             while (true) {
                 try {
                     //判断获取消息成功
@@ -94,6 +95,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             while (true) {
                 try {
                     //判断获取消息成功
+
                     List<MapRecord<String, Object, Object>> list = stringRedisTemplate.opsForStream().read(
                             Consumer.from("g1", "c1"),
                             StreamReadOptions.empty().count(1).block(Duration.ofSeconds(2)),
