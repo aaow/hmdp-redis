@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 hm-dianping-font/logs/
+hm-dianping-font/html/
 ### STS ###
 .apt_generated
 .classpath
