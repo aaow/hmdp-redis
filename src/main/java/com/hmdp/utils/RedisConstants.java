@@ -20,6 +20,7 @@ public class RedisConstants {
 
     public static final String SECKILL_STOCK_KEY = "seckill:stock:";
     public static final String BLOG_LIKED_KEY = "blog:liked:";
-    public static final String USER_FOLLOW_KEY = "user:follow:";
+    public static final String USER_FOLLOW_KEY = "follow:";
+    public static final String FOLLOW_FEED_KEY = "feed:";
 
 }
