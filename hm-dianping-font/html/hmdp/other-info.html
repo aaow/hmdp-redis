@@ -52,6 +52,10 @@
       </el-tab-pane>
       <el-tab-pane label="共同关注" name="2">
         <div>你们都关注了：</div>
+        <div v-for="x in commonFollows" :key="x.id" class="info-box">
+          <div class="info-item" v-html="x.nickName"></div>
+          
+        </div>
         <div>张三</div>
         <div>李四</div>
       </el-tab-pane>
