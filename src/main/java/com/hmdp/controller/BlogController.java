@@ -75,11 +75,16 @@ public class BlogController {
 
     @GetMapping("/of/user")
     public Result queryBlogByUserId(
-            @RequestParam(value = "current",defaultValue = "1") Integer current,
-            @RequestParam("id")Long id
+            @RequestParam(value = "current", defaultValue = "1") Integer current,
+            @RequestParam("id") Long id
     ) {
         List<Blog> ids = blogService.query().eq("user_id", id)
                 .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE)).getRecords();
         return Result.ok(ids);
+    }
+
+    @GetMapping("/of/follow")
+    public Result queryBlogOfFollow(@RequestParam("lastId") Long max, @RequestParam(value = "offset", defaultValue = "0") Integer offset) {
+        return blogService.queryBlogOfFollow(max, offset);
     }
 }

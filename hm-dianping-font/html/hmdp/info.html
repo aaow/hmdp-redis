@@ -55,10 +55,19 @@
         </el-tab-pane>
         <el-tab-pane label="评价" name="2">评价</el-tab-pane>
         <el-tab-pane label="粉丝(0)" name="3">粉丝(0)</el-tab-pane>
-        <el-tab-pane label="关注(0)" name="4">关注(0)</el-tab-pane>
+        <el-tab-pane label="关注(0)" name="4">
+          <div v-for="f in followBlogs.list" :key="f.id" class="blog-item">
+            <div class="blog-img"><img :src="f.images.split(',')[0]" alt=""></div>
+            <div class="blog-info">
+              <div class="blog-title">{{f.title}}</div>
+              <div class="blog-liked"><img src="/imgs/thumbup.png" alt=""> {{f.liked}}</div>
+              <div class="blog-comments"><i class="el-icon-chat-dot-round"></i> {{f.comments}}</div>
+            </div>
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </div>
-    <foot-bar :active-btn="4"></foot-bar>
+    <foot-bar :active-btn="0"></foot-bar>
   </div>
   <script src="./js/vue.js"></script>
   <script src="./js/axios.min.js"></script>
@@ -70,10 +79,12 @@
     const app = new Vue({
       el: "#app",
       data: {
+        followBlogs: [],
         user: "",
         activeName: "1",
         info: {},
         blogs: []
+        
       },
       created() {
         this.queryUser();
@@ -117,6 +128,15 @@
               this.$message.error(err);
             })
         },
+        queryBlogOfFollow() {
+          axios.get("/blog/of/follow", {
+              params: {lastId: followBlogs.minTime, offset: followBlogs.offset}
+            })
+            .then(({data}) => this.followBlogs = data)
+            .catch(err => {
+              this.$message.error(err);
+            })
+        },
         toEdit() {
           location.href = 'info-edit.html'
         },
@@ -130,7 +150,11 @@
             })
             .catch(this.$message.error)
         },
-        handleClick() {
+        handleClick(t) {
+          followBlogs.minTime = new Date().getTime();
+          if (t.name === '4') {
+            this.queryBlogOfFollow();
+          }
         }
       },
 
