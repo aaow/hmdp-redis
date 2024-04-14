@@ -55,7 +55,7 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
 
         stringRedisTemplate.opsForList().rightPushAll(key, typeJson);
         stringRedisTemplate.expire(key,CACHE_SHOP_TYPE_TTL, TimeUnit.MINUTES);
-        log.debug("<== Redis set: " + key +" ,"+CACHE_SHOP_TYPE_TTL);
+        log.debug("<== Redis set: " + key + " ," + CACHE_SHOP_TYPE_TTL);
         return Result.ok(typeList, (long) typeList.size());
     }
 }
