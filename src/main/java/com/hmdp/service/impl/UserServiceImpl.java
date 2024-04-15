@@ -12,6 +12,7 @@ import com.hmdp.entity.User;
 import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IUserService;
 import com.hmdp.utils.RegexUtils;
+import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
+import java.text.DateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +62,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.debug("发送短信验证码成功，验证码:{}",code);
         //返回ok
         return Result.ok();
+    }
+
+    @Override
+    public Result sign() {
+        //获取用户，日期， 写入reids
+        Long userId = UserHolder.getUser().getId();
+        LocalDateTime now = LocalDateTime.now();
+        String keySuffix = now.format(DateTimeFormatter.ofPattern(":yyyymm"));
+        String key = USER_SIGN_KEY + userId + keySuffix;
+        int dayOfMonth = now.getDayOfMonth();
+        log.debug(String.valueOf(dayOfMonth));
+        stringRedisTemplate.opsForValue().setBit(key, dayOfMonth - 1, true);
+        return Result.ok("签到成功");
     }
 
     @Override
